@@ -121,6 +121,8 @@ class Cyberoam(QtGui.QWidget):
         self.passwordField.setText(self.password)
         if self.userSettings['rememberme']=='1':
             self.rememberField.setChecked(True)
+
+        self.show()
         
     def attachSignals(self):
         
@@ -130,20 +132,21 @@ class Cyberoam(QtGui.QWidget):
         
     def initializeSystemTray(self):
         
-        tray=QtGui.QSystemTrayIcon(QtGui.QIcon("cyberoam.png"),self)
+        self.tray=QtGui.QSystemTrayIcon(QtGui.QIcon("cyberoam.png"),self)
         menu=QtGui.QMenu(self)
         exitAction = menu.addAction("Exit")
         exitAction.triggered.connect(self.exitApp)
-        tray.setContextMenu(menu)
+        self.tray.setContextMenu(menu)
         
-        tray.activated.connect(self.handleTrayAction)
-        tray.show()
+        self.tray.activated.connect(self.handleTrayAction)
+        self.tray.show()
         
     def autologin(self):
         
         if self.userSettings['autologin']=='1':
             if self.userSettings['lastuser']!="null" and self.userSettings['lastpassword']!="null":
                 self.login()
+                self.hide()
             else:
                 self.updateStatus("Could not auto login. Username or password not saved")
         
@@ -269,7 +272,9 @@ class Cyberoam(QtGui.QWidget):
             self.passwordField.setEnabled(False)
             self.rememberField.setEnabled(False)
             self.actionButton.setText(self.actionMessages[self.loggedIn])
+            self.tray.setIcon(QtGui.QIcon("cyberoam-loggedin.png"))
             self.passwordField.setText("abcdefghijklmnopqrstuvwxyz")
+            
             self.loginThread=CyberoamLogin(self,cyberoamAddress,username)
             self.loginThread.start()
         else:
@@ -278,29 +283,6 @@ class Cyberoam(QtGui.QWidget):
     
     def logout(self):
         
-        if self.loggedIn==1:            
-             
-            self.loginThread.logout()
-            self.loginThread.join()            
-            
-            cyberoamAddress=self.userSettings['url']
-            username=self.user            
-
-            flag=0
-            try:
-                myfile = urllib2.urlopen(cyberoamAddress + "/logout.xml", "mode=193&username=" + username + "&a=" + (str)((int)(time.time() * 1000)),timeout=3)
-                flag=1
-            except IOError:
-                self.updateStatus("Error: Could not connect to server for logging out")
-            if flag==1:
-                data = myfile.read()
-                myfile.close()
-                dom = parseString(data)
-                xmlTag = dom.getElementsByTagName('message')[0].toxml()
-                message = xmlTag.replace('<message>', '').replace('</message>', '')
-                self.updateStatus(message)
-
-        self.loggedIn=0
         if self.userSettings['lastpassword']!='null':
             self.passwordField.setText(self.password)
         else:
@@ -308,7 +290,32 @@ class Cyberoam(QtGui.QWidget):
         self.userField.setEnabled(True)
         self.passwordField.setEnabled(True)
         self.rememberField.setEnabled(True)
-        self.actionButton.setText(self.actionMessages[self.loggedIn])
+        self.tray.setIcon(QtGui.QIcon("cyberoam.png"))
+
+        if self.loggedIn==1:            
+             
+
+            self.loggedIn=0
+            self.actionButton.setText(self.actionMessages[self.loggedIn])
+            self.loginThread.logout()
+            self.loginThread.join()            
+            
+            cyberoamAddress=self.userSettings['url']
+            username=self.user            
+
+            try:
+                myfile = urllib2.urlopen(cyberoamAddress + "/logout.xml", "mode=193&username=" + username + "&a=" + (str)((int)(time.time() * 1000)),timeout=3)
+            except IOError:
+                self.updateStatus("Error: Could not connect to server for logging out")
+                return
+            data = myfile.read()
+            myfile.close()
+            dom = parseString(data)
+            xmlTag = dom.getElementsByTagName('message')[0].toxml()
+            message = xmlTag.replace('<message>', '').replace('</message>', '')
+            self.updateStatus(message)
+
+
     
     def closeEvent(self,event):
         
@@ -329,7 +336,6 @@ def main():
     
     app=QtGui.QApplication(sys.argv)
     client=Cyberoam()
-    client.show()
     sys.exit(app.exec_())
     
 if __name__=="__main__":

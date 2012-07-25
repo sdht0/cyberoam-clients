@@ -1,6 +1,6 @@
 Cyberoam PyQt Client
 ===================
-Version: 0.6
+Version: 0.6.1
 Licence: GPLv3
 
 A cyberoam gui client build using PyQt primarily for use on linux systems. though it can also run on Windows :)
