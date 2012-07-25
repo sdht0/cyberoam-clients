@@ -1,17 +1,18 @@
-Cyberoam PyQt Client
-===================
-Version: 0.6.1
+Graphical Cyberoam Client
+========================
+Version: 0.7  
 Licence: GPLv3
 
-A cyberoam gui client build using PyQt primarily for use on linux systems. though it can also run on Windows :)
+A graphical cyberoam client build using PyQt primarily because of the lack of an official GUI client for Linux.
+And yes this will run on both Windows and Linux:)
 
 Requirements:
-* python 2.7 (http://www.python.org/getit): 
+* python 2.7 (http://www.python.org/getit):  
     It is usually installed on *nix systems by default
-* pyqt4 (http://www.riverbankcomputing.co.uk/software/pyqt/download/):
+* pyqt4 (http://www.riverbankcomputing.co.uk/software/pyqt/download/):  
     Ubuntu users can install it by running `apt-get install python-qt4`
 
-I have tested it on Ubuntu (KDE and Unity), and Windows 7
+I have tested it on Ubuntu 12.04 x64 (KDE and Unity), and Windows 7 x64
 
 To use, just run `python cyberoam.py`
 

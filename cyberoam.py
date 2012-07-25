@@ -2,43 +2,6 @@ from PyQt4 import QtGui, QtCore
 from xml.dom.minidom import parseString
 import urllib2, sys, time, base64, threading
 
-class CyberoamLogin(threading.Thread):
-    
-    def  __init__(self,client,address,user):
-        
-        threading.Thread.__init__ ( self )
-        self.logoutSignal=0
-        self.timeout=180
-        self.address=address
-        self.user=user
-        self.client=client
-        
-    def logout(self):
-        
-        self.logoutSignal=1
-        
-    def run(self):
-        
-        count=0
-        while self.logoutSignal==0:
-            count+=1
-            if count==self.timeout:
-                count=0
-                try:
-                    myfile = urllib2.urlopen(self.address + "/live?mode=192&username=" + self.user + "&a=" + (str)((int)(time.time() * 1000)),timeout=3)
-                except IOError:
-                    self.client.updateStatus("Error: Could not connect to server for relogin acknowledgement")
-                    return
-                data = myfile.read()
-                myfile.close()
-                dom = parseString(data)
-                xmlTag = dom.getElementsByTagName('ack')[0].toxml()
-                message = xmlTag.replace('<ack>', '').replace('</ack>', '')
-                if message!='ack':
-                    self.client.updateStatus("Error: Server response not recognized")
-                    return
-            time.sleep(1)
-
 class Cyberoam(QtGui.QWidget):
     
     def __init__(self):
@@ -146,7 +109,8 @@ class Cyberoam(QtGui.QWidget):
         if self.userSettings['autologin']=='1':
             if self.userSettings['lastuser']!="null" and self.userSettings['lastpassword']!="null":
                 self.login()
-                self.hide()
+                if self.loggedIn==1:
+                    self.hide()
             else:
                 self.updateStatus("Could not auto login. Username or password not saved")
         
@@ -253,6 +217,7 @@ class Cyberoam(QtGui.QWidget):
         password=self.password
         
         try:
+            self.updateStatus("Connecting to server for logging in...")
             myfile = urllib2.urlopen(cyberoamAddress + "/login.xml", "mode=191&username=" + username + "&password=" + password + "&a=" + (str)((int)(time.time() * 1000)),timeout=3)
         except IOError:
             self.updateStatus("Error: Could not connect to server for logging in")
@@ -265,20 +230,44 @@ class Cyberoam(QtGui.QWidget):
         xmlTag = dom.getElementsByTagName('status')[0].toxml()
         status = xmlTag.replace('<status>', '').replace('</status>', '')
         
-        if status.lower()=='live':
-            self.updateStatus(message)
-            self.loggedIn=1
-            self.userField.setEnabled(False)
-            self.passwordField.setEnabled(False)
-            self.rememberField.setEnabled(False)
-            self.actionButton.setText(self.actionMessages[self.loggedIn])
-            self.tray.setIcon(QtGui.QIcon("cyberoam-loggedin.png"))
-            self.passwordField.setText("abcdefghijklmnopqrstuvwxyz")
-            
-            self.loginThread=CyberoamLogin(self,cyberoamAddress,username)
-            self.loginThread.start()
-        else:
+        if status.lower()!='live':
             self.updateStatus("Error: "+message)
+            return
+        
+        self.updateStatus(message)
+        self.loggedIn=1
+        self.userField.setEnabled(False)
+        self.passwordField.setEnabled(False)
+        self.rememberField.setEnabled(False)
+        self.actionButton.setText(self.actionMessages[self.loggedIn])
+        self.tray.setIcon(QtGui.QIcon("cyberoam-loggedin.png"))
+        self.passwordField.setText("abcdefghijklmnopqrstuvwxyz")
+        
+        self.timer=QtCore.QTimer(self)
+        self.timer.start(180000)
+        self.timer.timeout.connect(self.relogin)
+
+    def relogin(self):
+        
+        cyberoamAddress=self.userSettings['url']
+        username=self.user 
+        try:
+            self.updateStatus("Connecting to server for login acknowledgement...")
+            myfile = urllib2.urlopen(cyberoamAddress + "/live?mode=192&username=" + username + "&a=" + (str)((int)(time.time() * 1000)),timeout=3)
+        except IOError:
+            self.updateStatus("Error: Could not connect to server for login acknowledgement")
+            self.logout()
+            return
+        data = myfile.read()
+        myfile.close()
+        dom = parseString(data)
+        xmlTag = dom.getElementsByTagName('ack')[0].toxml()
+        message = xmlTag.replace('<ack>', '').replace('</ack>', '')
+        if message=='ack':
+            self.updateStatus("You are logged in")
+        else:
+            self.updateStatus("Error: Server response not recognized")
+            self.logout()
             return
     
     def logout(self):
@@ -292,18 +281,17 @@ class Cyberoam(QtGui.QWidget):
         self.rememberField.setEnabled(True)
         self.tray.setIcon(QtGui.QIcon("cyberoam.png"))
 
-        if self.loggedIn==1:            
-             
-
+        if self.loggedIn==1:
+                        
             self.loggedIn=0
             self.actionButton.setText(self.actionMessages[self.loggedIn])
-            self.loginThread.logout()
-            self.loginThread.join()            
+            self.timer.stop()           
             
             cyberoamAddress=self.userSettings['url']
             username=self.user            
 
             try:
+                self.updateStatus("Connecting to server for logging out...")
                 myfile = urllib2.urlopen(cyberoamAddress + "/logout.xml", "mode=193&username=" + username + "&a=" + (str)((int)(time.time() * 1000)),timeout=3)
             except IOError:
                 self.updateStatus("Error: Could not connect to server for logging out")
@@ -314,8 +302,6 @@ class Cyberoam(QtGui.QWidget):
             xmlTag = dom.getElementsByTagName('message')[0].toxml()
             message = xmlTag.replace('<message>', '').replace('</message>', '')
             self.updateStatus(message)
-
-
     
     def closeEvent(self,event):
         
