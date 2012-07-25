@@ -1,6 +1,6 @@
 from PyQt4 import QtGui, QtCore
 from xml.dom.minidom import parseString
-import urllib, sys, time, base64, threading
+import urllib2, sys, time, base64, threading
 
 class CyberoamLogin(threading.Thread):
     
@@ -25,17 +25,17 @@ class CyberoamLogin(threading.Thread):
             if count==self.timeout:
                 count=0
                 try:
-                    myfile = urllib.urlopen(self.address + "/live?mode=192&username=" + self.user + "&a=" + (str)((int)(time.time() * 1000)))
+                    myfile = urllib2.urlopen(self.address + "/live?mode=192&username=" + self.user + "&a=" + (str)((int)(time.time() * 1000)),timeout=3)
                 except IOError:
-                    print "Error connecting"
-                    sys.exit(1)
+                    self.client.updateStatus("Error: Could not connect to server for relogin acknowledgement")
+                    return
                 data = myfile.read()
                 myfile.close()
                 dom = parseString(data)
                 xmlTag = dom.getElementsByTagName('ack')[0].toxml()
                 message = xmlTag.replace('<ack>', '').replace('</ack>', '')
                 if message!='ack':
-                    self.client.updateStatus("Error Logging In")
+                    self.client.updateStatus("Error: Server response not recognized")
                     return
             time.sleep(1)
 
@@ -133,7 +133,7 @@ class Cyberoam(QtGui.QWidget):
         tray=QtGui.QSystemTrayIcon(QtGui.QIcon("cyberoam.png"),self)
         menu=QtGui.QMenu(self)
         exitAction = menu.addAction("Exit")
-        exitAction.activated.connect(self.exitApp)
+        exitAction.triggered.connect(self.exitApp)
         tray.setContextMenu(menu)
         
         tray.activated.connect(self.handleTrayAction)
@@ -141,10 +141,11 @@ class Cyberoam(QtGui.QWidget):
         
     def autologin(self):
         
-        if self.userSettings['autologin']=='1' and self.userSettings['lastuser']!="null" and self.userSettings['lastpassword']!="null":
-            self.login()
-        else:
-            self.updateStatus("Could not auto login. Username or password not saved")
+        if self.userSettings['autologin']=='1':
+            if self.userSettings['lastuser']!="null" and self.userSettings['lastpassword']!="null":
+                self.login()
+            else:
+                self.updateStatus("Could not auto login. Username or password not saved")
         
     def handleTrayAction(self): 
         
@@ -226,7 +227,7 @@ class Cyberoam(QtGui.QWidget):
     def handleSaveSettings(self):
         
         val={}
-        val['url']=self.urlField.text()
+        val['url']=str(self.urlField.text()).strip(" /")
         if self.askOnExitField.isChecked():
             val['askonexit']='1'
         else:
@@ -244,14 +245,14 @@ class Cyberoam(QtGui.QWidget):
     
     def login(self):
         
-        cyberoamAddress=self.userSettings['url'].strip(" /")
+        cyberoamAddress=self.userSettings['url']
         username=self.user
         password=self.password
         
         try:
-            myfile = urllib.urlopen(cyberoamAddress + "/login.xml", "mode=191&username=" + username + "&password=" + password + "&a=" + (str)((int)(time.time() * 1000)))
+            myfile = urllib2.urlopen(cyberoamAddress + "/login.xml", "mode=191&username=" + username + "&password=" + password + "&a=" + (str)((int)(time.time() * 1000)),timeout=3)
         except IOError:
-            self.updateStatus("Error Connecting")
+            self.updateStatus("Error: Could not connect to server for logging in")
             return
         data = myfile.read()
         myfile.close()
@@ -277,37 +278,37 @@ class Cyberoam(QtGui.QWidget):
     
     def logout(self):
         
-        if self.loggedIn==1:
-            
+        if self.loggedIn==1:            
+             
             self.loginThread.logout()
-            self.loginThread.join()
+            self.loginThread.join()            
             
             cyberoamAddress=self.userSettings['url']
-            username=self.user
-            
+            username=self.user            
+
+            flag=0
             try:
-                myfile = urllib.urlopen(cyberoamAddress + "/logout.xml", "mode=193&username=" + username + "&a=" + (str)((int)(time.time() * 1000)))
+                myfile = urllib2.urlopen(cyberoamAddress + "/logout.xml", "mode=193&username=" + username + "&a=" + (str)((int)(time.time() * 1000)),timeout=3)
+                flag=1
             except IOError:
-                self.updateStatus("Error Connecting")
-                return
-            data = myfile.read()
-            myfile.close()
-            dom = parseString(data)
-            xmlTag = dom.getElementsByTagName('message')[0].toxml()
-            message = xmlTag.replace('<message>', '').replace('</message>', '').replace('<message/>', '')
-            if message=="":
-                message="Logout request did not complete successfully. Probably you are already logged out."
-            self.updateStatus(message)
-            
-            if self.userSettings['lastpassword']!='null':
-                self.passwordField.setText(self.password)
-            else:
-                self.passwordField.setText("")
-            self.loggedIn=0
-            self.userField.setEnabled(True)
-            self.passwordField.setEnabled(True)
-            self.rememberField.setEnabled(True)
-            self.actionButton.setText(self.actionMessages[self.loggedIn])
+                self.updateStatus("Error: Could not connect to server for logging out")
+            if flag==1:
+                data = myfile.read()
+                myfile.close()
+                dom = parseString(data)
+                xmlTag = dom.getElementsByTagName('message')[0].toxml()
+                message = xmlTag.replace('<message>', '').replace('</message>', '')
+                self.updateStatus(message)
+
+        self.loggedIn=0
+        if self.userSettings['lastpassword']!='null':
+            self.passwordField.setText(self.password)
+        else:
+            self.passwordField.setText("")
+        self.userField.setEnabled(True)
+        self.passwordField.setEnabled(True)
+        self.rememberField.setEnabled(True)
+        self.actionButton.setText(self.actionMessages[self.loggedIn])
     
     def closeEvent(self,event):
         
