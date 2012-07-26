@@ -1,6 +1,7 @@
 from PyQt4 import QtGui, QtCore
 from xml.dom.minidom import parseString
-import urllib2, sys, time, base64, threading
+from datetime import datetime
+import urllib2, sys, time, base64
 
 class Cyberoam(QtGui.QWidget):
     
@@ -36,7 +37,7 @@ class Cyberoam(QtGui.QWidget):
                 
     def createwindow(self):
         
-        self.setFixedSize(300, 240)
+        self.setFixedSize(320, 250)
         self.setWindowTitle("Cyberoam Client")
         self.setWindowIcon(QtGui.QIcon("cyberoam.png"))
         
@@ -62,7 +63,6 @@ class Cyberoam(QtGui.QWidget):
         self.settingsButton=QtGui.QPushButton("Settings")
         
         self.statusLabel=QtGui.QTextEdit()
-        self.statusLabel.setText("Not Logged In")
         self.statusLabel.setReadOnly(True)
         
         layout = QtGui.QGridLayout()
@@ -113,6 +113,8 @@ class Cyberoam(QtGui.QWidget):
                     self.hide()
             else:
                 self.updateStatus("Could not auto login. Username or password not saved")
+        else:
+            self.statusLabel.setText("Not Logged In")
         
     def handleTrayAction(self): 
         
@@ -208,7 +210,8 @@ class Cyberoam(QtGui.QWidget):
         
     def updateStatus(self,message):
         
-        self.statusLabel.setText(message)
+        timestamp=str(datetime.now().strftime("[ %I:%M:%S %p ] ")).lower()
+        self.statusLabel.append(timestamp+message)
     
     def login(self):
         
@@ -217,10 +220,10 @@ class Cyberoam(QtGui.QWidget):
         password=self.password
         
         try:
-            self.updateStatus("Connecting to server for logging in...")
+            self.updateStatus("Sending Log In request...")
             myfile = urllib2.urlopen(cyberoamAddress + "/login.xml", "mode=191&username=" + username + "&password=" + password + "&a=" + (str)((int)(time.time() * 1000)),timeout=3)
         except IOError:
-            self.updateStatus("Error: Could not connect to server for logging in")
+            self.updateStatus("Error: Log In request failed")
             return
         data = myfile.read()
         myfile.close()
@@ -252,10 +255,10 @@ class Cyberoam(QtGui.QWidget):
         cyberoamAddress=self.userSettings['url']
         username=self.user 
         try:
-            self.updateStatus("Connecting to server for login acknowledgement...")
+            self.updateStatus("Sending Logged In acknowledgement request...")
             myfile = urllib2.urlopen(cyberoamAddress + "/live?mode=192&username=" + username + "&a=" + (str)((int)(time.time() * 1000)),timeout=3)
         except IOError:
-            self.updateStatus("Error: Could not connect to server for login acknowledgement")
+            self.updateStatus("Error: Logged In Acknowledgement request failed")
             self.logout()
             return
         data = myfile.read()
@@ -291,10 +294,10 @@ class Cyberoam(QtGui.QWidget):
             username=self.user            
 
             try:
-                self.updateStatus("Connecting to server for logging out...")
+                self.updateStatus("Sending Log Out request...")
                 myfile = urllib2.urlopen(cyberoamAddress + "/logout.xml", "mode=193&username=" + username + "&a=" + (str)((int)(time.time() * 1000)),timeout=3)
             except IOError:
-                self.updateStatus("Error: Could not connect to server for logging out")
+                self.updateStatus("Log Out request failed...")
                 return
             data = myfile.read()
             myfile.close()
