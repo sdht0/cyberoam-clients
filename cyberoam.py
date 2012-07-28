@@ -97,12 +97,21 @@ class Cyberoam(QtGui.QWidget):
         
         self.tray=QtGui.QSystemTrayIcon(QtGui.QIcon("cyberoam.png"),self)
         menu=QtGui.QMenu(self)
+        windowAction = menu.addAction("Hide/Restore")
+        windowAction.triggered.connect(self.changeWindowStatus)
         exitAction = menu.addAction("Exit")
         exitAction.triggered.connect(self.exitApp)
         self.tray.setContextMenu(menu)
         
         self.tray.activated.connect(self.handleTrayAction)
         self.tray.show()
+        
+    def changeWindowStatus(self):
+    
+        if self.isHidden():
+            self.show()
+        else:
+            self.hide()
         
     def autologin(self):
         
@@ -244,6 +253,7 @@ class Cyberoam(QtGui.QWidget):
         self.rememberField.setEnabled(False)
         self.actionButton.setText(self.actionMessages[self.loggedIn])
         self.tray.setIcon(QtGui.QIcon("cyberoam-loggedin.png"))
+        self.setWindowIcon(QtGui.QIcon("cyberoam-loggedin.png"))
         self.passwordField.setText("abcdefghijklmnopqrstuvwxyz")
         
         self.timer=QtCore.QTimer(self)
@@ -283,6 +293,7 @@ class Cyberoam(QtGui.QWidget):
         self.passwordField.setEnabled(True)
         self.rememberField.setEnabled(True)
         self.tray.setIcon(QtGui.QIcon("cyberoam.png"))
+        self.setWindowIcon(QtGui.QIcon("cyberoam.png"))
 
         if self.loggedIn==1:
                         
