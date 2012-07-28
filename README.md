@@ -1,6 +1,6 @@
 Graphical Cyberoam Client
 ========================
-Version: 0.7.1  
+Version: 0.7.2  
 Licence: GPLv3
 
 A graphical cyberoam client build using PyQt primarily because of the lack of an official GUI client for Linux.
