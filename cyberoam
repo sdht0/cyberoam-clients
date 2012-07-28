@@ -1,0 +1,4 @@
+#!/bin/sh
+
+cd "~/cyberoam-client";
+python cyberoam.py
