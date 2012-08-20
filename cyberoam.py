@@ -280,7 +280,7 @@ class Cyberoam(QtGui.QWidget):
             self.updateStatus("You are logged in")
         else:
             self.updateStatus("Error: Server response not recognized")
-            self.logout()
+            self.login()
             return
     
     def logout(self):
