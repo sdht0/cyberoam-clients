@@ -121,7 +121,7 @@ class Cyberoam(QtGui.QWidget):
                 if self.loggedIn==1:
                     self.hide()
             else:
-                self.updateStatus("Could not auto login. Username or password not saved")
+                self.updateStatus("Could not auto login. Username or password missing!")
         else:
             self.statusLabel.setText("Not Logged In")
         
@@ -232,7 +232,7 @@ class Cyberoam(QtGui.QWidget):
             self.updateStatus("Sending Log In request...")
             myfile = urllib2.urlopen(cyberoamAddress + "/login.xml", "mode=191&username=" + username + "&password=" + password + "&a=" + (str)((int)(time.time() * 1000)),timeout=3)
         except IOError:
-            self.updateStatus("Error: Log In request failed")
+            self.updateStatus("Error: Could not connect to server")
             return
         data = myfile.read()
         myfile.close()
@@ -268,7 +268,7 @@ class Cyberoam(QtGui.QWidget):
             self.updateStatus("Sending Logged In acknowledgement request...")
             myfile = urllib2.urlopen(cyberoamAddress + "/live?mode=192&username=" + username + "&a=" + (str)((int)(time.time() * 1000)),timeout=3)
         except IOError:
-            self.updateStatus("Error: Logged In Acknowledgement request failed")
+            self.updateStatus("Error: Could not connect to server")
             self.logout()
             return
         data = myfile.read()
@@ -279,7 +279,7 @@ class Cyberoam(QtGui.QWidget):
         if message=='ack':
             self.updateStatus("You are logged in")
         else:
-            self.updateStatus("Error: Server response not recognized")
+            self.updateStatus("Error: Server response not recognized: "+message)
             self.login()
             return
     
@@ -308,7 +308,7 @@ class Cyberoam(QtGui.QWidget):
                 self.updateStatus("Sending Log Out request...")
                 myfile = urllib2.urlopen(cyberoamAddress + "/logout.xml", "mode=193&username=" + username + "&a=" + (str)((int)(time.time() * 1000)),timeout=3)
             except IOError:
-                self.updateStatus("Log Out request failed...")
+                self.updateStatus("Error:  Could not connect to server")
                 return
             data = myfile.read()
             myfile.close()
