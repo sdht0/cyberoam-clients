@@ -222,7 +222,7 @@ class Cyberoam(QtGui.QWidget):
 
         try:
             self.updateStatus("Sending Log In request...")
-            myfile = urllib2.urlopen(cyberoamAddress + "/login.xml", "mode = 191&username = " + username + "&password = " + password + "&a = " + (str)((int)(time.time() * 1000)), timeout=3)
+            myfile = urllib2.urlopen(cyberoamAddress + "/login.xml", "mode=191&username=" + username + "&password=" + password + "&a=" + (str)((int)(time.time() * 1000)), timeout=3)
         except IOError:
             self.updateStatus("Error: Could not connect to server")
             return
@@ -257,7 +257,7 @@ class Cyberoam(QtGui.QWidget):
         username = self.user
         try:
             self.updateStatus("Sending Logged In acknowledgement request...")
-            myfile = urllib2.urlopen(cyberoamAddress + "/live?mode = 192&username = " + username + "&a = " + (str)((int)(time.time() * 1000)), timeout=3)
+            myfile = urllib2.urlopen(cyberoamAddress + "/live?mode = 192&username=" + username + "&a=" + (str)((int)(time.time() * 1000)), timeout=3)
         except IOError:
             self.updateStatus("Error: Could not connect to server")
             self.logout()
@@ -296,7 +296,7 @@ class Cyberoam(QtGui.QWidget):
 
             try:
                 self.updateStatus("Sending Log Out request...")
-                myfile = urllib2.urlopen(cyberoamAddress + "/logout.xml", "mode = 193&username = " + username + "&a = " + (str)((int)(time.time() * 1000)), timeout=3)
+                myfile = urllib2.urlopen(cyberoamAddress + "/logout.xml", "mode=193&username=" + username + "&a=" + (str)((int)(time.time() * 1000)), timeout=3)
             except IOError:
                 self.updateStatus("Error:  Could not connect to server")
                 return
