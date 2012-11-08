@@ -257,7 +257,7 @@ class Cyberoam(QtGui.QWidget):
         username = self.user
         try:
             self.updateStatus("Sending Logged In acknowledgement request...")
-            myfile = urllib2.urlopen(cyberoamAddress + "/live?mode = 192&username=" + username + "&a=" + (str)((int)(time.time() * 1000)), timeout=3)
+            myfile = urllib2.urlopen(cyberoamAddress + "/live?mode=192&username=" + username + "&a=" + (str)((int)(time.time() * 1000)), timeout=3)
         except IOError:
             self.updateStatus("Error: Could not connect to server")
             self.logout()
