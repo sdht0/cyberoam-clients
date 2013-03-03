@@ -1,7 +1,7 @@
 from PyQt4 import QtGui, QtCore
 from xml.dom.minidom import parseString
 from datetime import datetime
-import urllib2
+import urllib2, urllib
 import sys
 import time
 import base64
@@ -217,12 +217,10 @@ class Cyberoam(QtGui.QWidget):
 
     def login(self):
         cyberoamAddress = self.userSettings['url']
-        username = self.user
-        password = self.password
-
+        data = {"mode":"191","username":self.user,"password":self.password,"a":(str)((int)(time.time() * 1000))}
         try:
             self.updateStatus("Sending Log In request...")
-            myfile = urllib2.urlopen(cyberoamAddress + "/login.xml", "mode=191&username=" + username + "&password=" + password + "&a=" + (str)((int)(time.time() * 1000)), timeout=3)
+            myfile = urllib2.urlopen(cyberoamAddress + "/login.xml", urllib.urlencode(data) , timeout=3)
         except IOError:
             self.updateStatus("Error: Could not connect to server")
             return
@@ -254,10 +252,10 @@ class Cyberoam(QtGui.QWidget):
 
     def relogin(self):
         cyberoamAddress = self.userSettings['url']
-        username = self.user
+        data = {"mode":"192","username":self.user,"a":(str)((int)(time.time() * 1000))}
         try:
             self.updateStatus("Sending Logged In acknowledgement request...")
-            myfile = urllib2.urlopen(cyberoamAddress + "/live?mode=192&username=" + username + "&a=" + (str)((int)(time.time() * 1000)), timeout=3)
+            myfile = urllib2.urlopen(cyberoamAddress + "/live?"+urllib.urlencode(data), timeout=3)
         except IOError:
             self.updateStatus("Error: Could not connect to server")
             self.logout()
@@ -292,11 +290,11 @@ class Cyberoam(QtGui.QWidget):
             self.timer.stop()
 
             cyberoamAddress = self.userSettings['url']
-            username = self.user
+            data = {"mode":"193","username":self.user,"a":(str)((int)(time.time() * 1000))}
 
             try:
                 self.updateStatus("Sending Log Out request...")
-                myfile = urllib2.urlopen(cyberoamAddress + "/logout.xml", "mode=193&username=" + username + "&a=" + (str)((int)(time.time() * 1000)), timeout=3)
+                myfile = urllib2.urlopen(cyberoamAddress + "/logout.xml", urllib.urlencode(data), timeout=3)
             except IOError:
                 self.updateStatus("Error:  Could not connect to server")
                 return
