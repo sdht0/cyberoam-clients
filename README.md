@@ -31,5 +31,5 @@ I may create a proper installer sometime :)
 
 License
 -------
-GPLv3
+GNU GPLv3
 
