@@ -5,11 +5,14 @@ import urllib2, urllib
 import sys
 import time
 import base64
+import os
 
 
 class Cyberoam(QtGui.QWidget):
-
+    pfd = ''
     def __init__(self):
+        dirname, filename = os.path.split(os.path.abspath(__file__))
+        self.pfd = dirname + "/"
         super(Cyberoam, self).__init__()
         self.initializeSettings()
         self.createwindow()
@@ -43,7 +46,7 @@ class Cyberoam(QtGui.QWidget):
     def createwindow(self):
         self.setFixedSize(320, 250)
         self.setWindowTitle("Cyberoam Client")
-        self.setWindowIcon(QtGui.QIcon("cyberoam.png"))
+        self.setWindowIcon(QtGui.QIcon(self.pfd + "cyberoam.png"))
 
         #center window
         qr = self.frameGeometry()
@@ -96,7 +99,7 @@ class Cyberoam(QtGui.QWidget):
         self.exitButton.clicked.connect(self.exitApp)
 
     def initializeSystemTray(self):
-        self.tray = QtGui.QSystemTrayIcon(QtGui.QIcon("cyberoam.png"), self)
+        self.tray = QtGui.QSystemTrayIcon(QtGui.QIcon(self.pfd + "cyberoam.png"), self)
         menu = QtGui.QMenu(self)
         windowAction = menu.addAction("Hide/Restore")
         windowAction.triggered.connect(self.changeWindowStatus)
@@ -242,8 +245,8 @@ class Cyberoam(QtGui.QWidget):
         self.passwordField.setEnabled(False)
         self.rememberField.setEnabled(False)
         self.actionButton.setText(self.actionMessages[self.loggedIn])
-        self.tray.setIcon(QtGui.QIcon("cyberoam-loggedin.png"))
-        self.setWindowIcon(QtGui.QIcon("cyberoam-loggedin.png"))
+        self.tray.setIcon(QtGui.QIcon(self.pfd + "cyberoam-loggedin.png"))
+        self.setWindowIcon(QtGui.QIcon(self.pfd + "cyberoam-loggedin.png"))
         self.passwordField.setText("abcdefghijklmnopqrstuvwxyz")
 
         self.timer = QtCore.QTimer(self)
@@ -280,8 +283,8 @@ class Cyberoam(QtGui.QWidget):
         self.userField.setEnabled(True)
         self.passwordField.setEnabled(True)
         self.rememberField.setEnabled(True)
-        self.tray.setIcon(QtGui.QIcon("cyberoam.png"))
-        self.setWindowIcon(QtGui.QIcon("cyberoam.png"))
+        self.tray.setIcon(QtGui.QIcon(self.pfd + "cyberoam.png"))
+        self.setWindowIcon(QtGui.QIcon(self.pfd + "cyberoam.png"))
 
         if self.loggedIn == 1:
 
@@ -319,7 +322,7 @@ class Cyberoam(QtGui.QWidget):
         QtCore.QCoreApplication.instance().quit()
 
 
-def main():
+def main(): 
     app = QtGui.QApplication(sys.argv)
     client = Cyberoam()
     sys.exit(app.exec_())
