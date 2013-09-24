@@ -1,8 +1,8 @@
 Graphical Cyberoam Client
 ========================
 
-Overview
---------
+About
+------
 A graphical cyberoam client build using PyQt primarily because of the lack of an official GUI client for Linux.
 And yes this will run on both Windows and Linux :)
 
@@ -29,7 +29,7 @@ Also you'll need to make the linux script executable: `chmod +x cyberoam`
 
 I may create a proper installer sometime :)
 
-Licence
+License
 -------
-GPLv3
+GNU GPLv3
 
