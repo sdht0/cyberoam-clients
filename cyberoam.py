@@ -216,14 +216,15 @@ class Cyberoam(QtGui.QWidget):
         self.saveSettings(val)
         self.settingsWindow.close()
 
-    def updateStatus(self, message):
+    def updateStatus(self, message, scrollToEnd=True):
         timestamp = str(datetime.now().strftime("[ %I:%M:%S %p ] ")).lower()
         self.statusLabel.append(timestamp + message)
+        if scrollToEnd == True:
+            self.statusLabel.moveCursor(QtGui.QTextCursor.End)
 
     def login(self):
 
-        self.trytimer.stop()
-        self.timer.stop()
+        self.logout()
 
         cyberoamAddress = self.userSettings['url']
         data = {"mode":"191","username":self.user,"password":self.password,"a":(str)((int)(time.time() * 1000))}
@@ -265,7 +266,6 @@ class Cyberoam(QtGui.QWidget):
             myfile = urllib2.urlopen(cyberoamAddress + "/live?"+urllib.urlencode(data), timeout=3)
         except IOError:
             self.updateStatus("Error: Could not connect to server")
-            self.logout()
             self.trytimer.start(1000)
             return
         data = myfile.read()
@@ -277,7 +277,7 @@ class Cyberoam(QtGui.QWidget):
             self.updateStatus("You are logged in")
         else:
             self.updateStatus("Error: Server response not recognized: " + message)
-            self.login()
+            self.trytimer.start(1000)
             return
 
     def logout(self):
