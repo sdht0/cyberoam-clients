@@ -20,6 +20,7 @@ class Cyberoam(QtGui.QWidget):
 
     def initializeSettings(self):
         self.loggedIn = 0
+        self.tryTimerOn = 0
         self.actionMessages = ['Login', 'Logout']
 
         self.userSettings = {'url': 'https://172.16.1.1:8090', 'askonexit': '1',
@@ -81,6 +82,11 @@ class Cyberoam(QtGui.QWidget):
         layout.addWidget(self.exitButton, 5, 1)
         layout.addWidget(self.statusLabel, 6, 0, 1, 2)
 
+        layout.setColumnMinimumWidth(0,200)
+        layout.setColumnMinimumWidth(1,200)
+        layout.setColumnStretch(0,0)
+        layout.setColumnStretch(1,0)
+
         self.setLayout(layout)
 
         self.userField.setText(self.user)
@@ -137,6 +143,9 @@ class Cyberoam(QtGui.QWidget):
 
     def handleActionButton(self):
         if self.loggedIn == 0:
+            if self.tryTimerOn==1:
+                self.stopTryTimer()
+                return
             if self.userField.text() == "" or self.passwordField.text() == "":
                 self.updateStatus("Username or Password Missing!")
                 return
@@ -222,9 +231,17 @@ class Cyberoam(QtGui.QWidget):
         if scrollToEnd == True:
             self.statusLabel.moveCursor(QtGui.QTextCursor.End)
 
-    def login(self):
+    def startTryTimer(self):
+        self.tryTimerOn=1
+        self.trytimer.start(4000)
+        self.actionButton.setText("Stop Login Attempts")
 
-        self.logout()
+    def stopTryTimer(self):
+        self.tryTimerOn=0
+        self.trytimer.stop()
+        self.actionButton.setText(self.actionMessages[self.loggedIn])
+
+    def login(self):
 
         cyberoamAddress = self.userSettings['url']
         data = {"mode":"191","username":self.user,"password":self.password,"a":(str)((int)(time.time() * 1000))}
@@ -233,7 +250,7 @@ class Cyberoam(QtGui.QWidget):
             myfile = urllib2.urlopen(cyberoamAddress + "/login.xml", urllib.urlencode(data) , timeout=3)
         except IOError:
             self.updateStatus("Error: Could not connect to server")
-            self.trytimer.start(1000)
+            self.startTryTimer()
             return
         data = myfile.read()
         myfile.close()
@@ -257,6 +274,7 @@ class Cyberoam(QtGui.QWidget):
         self.setWindowIcon(QtGui.QIcon("cyberoam-loggedin.png"))
         self.passwordField.setText("abcdefghijklmnopqrstuvwxyz")
         self.timer.start(180000)
+        self.stopTryTimer()
 
     def relogin(self):
         cyberoamAddress = self.userSettings['url']
@@ -266,7 +284,8 @@ class Cyberoam(QtGui.QWidget):
             myfile = urllib2.urlopen(cyberoamAddress + "/live?"+urllib.urlencode(data), timeout=3)
         except IOError:
             self.updateStatus("Error: Could not connect to server")
-            self.trytimer.start(1000)
+            self.logout()
+            self.startTryTimer()
             return
         data = myfile.read()
         myfile.close()
@@ -277,12 +296,12 @@ class Cyberoam(QtGui.QWidget):
             self.updateStatus("You are logged in")
         else:
             self.updateStatus("Error: Server response not recognized: " + message)
-            self.trytimer.start(1000)
+            self.logout()
+            self.login()
             return
 
     def logout(self):
 
-        self.trytimer.stop()
         self.timer.stop()
 
         if self.userSettings['lastpassword'] != 'null':
