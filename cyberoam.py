@@ -100,6 +100,7 @@ class Cyberoam(QtGui.QWidget):
         self.actionButton.clicked.connect(self.handleActionButton)
         self.settingsButton.clicked.connect(self.showSettingsWindow)
         self.exitButton.clicked.connect(self.exitApp)
+        self.passwordField.returnPressed.connect(self.actionButton.click)
 
         self.trytimer = QtCore.QTimer(self)
         self.trytimer.timeout.connect(self.login)
@@ -233,8 +234,8 @@ class Cyberoam(QtGui.QWidget):
 
     def startTryTimer(self):
         self.tryTimerOn=1
-        self.trytimer.start(4000)
-        self.actionButton.setText("Stop Login Attempts")
+        self.trytimer.start(3000)
+        self.actionButton.setText("Stop Attempts")
 
     def stopTryTimer(self):
         self.tryTimerOn=0
@@ -246,7 +247,7 @@ class Cyberoam(QtGui.QWidget):
         cyberoamAddress = self.userSettings['url']
         data = {"mode":"191","username":self.user,"password":self.password,"a":(str)((int)(time.time() * 1000))}
         try:
-            self.updateStatus("Sending Log In request...")
+            self.updateStatus("Sending login request...")
             myfile = urllib2.urlopen(cyberoamAddress + "/login.xml", urllib.urlencode(data) , timeout=3)
         except IOError:
             self.updateStatus("Error: Could not connect to server")
@@ -280,7 +281,7 @@ class Cyberoam(QtGui.QWidget):
         cyberoamAddress = self.userSettings['url']
         data = {"mode":"192","username":self.user,"a":(str)((int)(time.time() * 1000))}
         try:
-            self.updateStatus("Sending Logged In acknowledgement request...")
+            self.updateStatus("Sending ack request...")
             myfile = urllib2.urlopen(cyberoamAddress + "/live?"+urllib.urlencode(data), timeout=3)
         except IOError:
             self.updateStatus("Error: Could not connect to server")
@@ -324,7 +325,7 @@ class Cyberoam(QtGui.QWidget):
             data = {"mode":"193","username":self.user,"a":(str)((int)(time.time() * 1000))}
 
             try:
-                self.updateStatus("Sending Log Out request...")
+                self.updateStatus("Sending logout request...")
                 myfile = urllib2.urlopen(cyberoamAddress + "/logout.xml", urllib.urlencode(data), timeout=3)
             except IOError:
                 self.updateStatus("Error:  Could not connect to server")
