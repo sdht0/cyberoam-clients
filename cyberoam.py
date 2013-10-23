@@ -234,7 +234,7 @@ class Cyberoam(QtGui.QWidget):
 
     def startTryTimer(self):
         self.tryTimerOn=1
-        self.trytimer.start(3000)
+        self.trytimer.start(4000)
         self.actionButton.setText("Stop Attempts")
 
     def stopTryTimer(self):
@@ -261,6 +261,8 @@ class Cyberoam(QtGui.QWidget):
         xmlTag = dom.getElementsByTagName('status')[0].toxml()
         status = xmlTag.replace('<status>', '').replace('</status>', '')
 
+        self.stopTryTimer()
+
         if status.lower() != 'live':
             self.updateStatus("Error: " + message)
             return
@@ -275,7 +277,6 @@ class Cyberoam(QtGui.QWidget):
         self.setWindowIcon(QtGui.QIcon("cyberoam-loggedin.png"))
         self.passwordField.setText("abcdefghijklmnopqrstuvwxyz")
         self.timer.start(180000)
-        self.stopTryTimer()
 
     def relogin(self):
         cyberoamAddress = self.userSettings['url']
@@ -286,7 +287,7 @@ class Cyberoam(QtGui.QWidget):
         except IOError:
             self.updateStatus("Error: Could not connect to server")
             self.logout()
-            self.startTryTimer()
+            self.login()
             return
         data = myfile.read()
         myfile.close()
