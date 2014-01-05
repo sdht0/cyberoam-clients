@@ -1,0 +1,5 @@
+#!/bin/bash
+
+USER=""
+PASSWORD=""
+URL="https://172.16.1.1:8090"

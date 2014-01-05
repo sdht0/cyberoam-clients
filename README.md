@@ -1,33 +1,11 @@
-Graphical Cyberoam Client
-========================
+Cyberoam Clients
+================
 
-About
-------
-A graphical cyberoam client build using PyQt primarily because of the lack of an official GUI client for Linux.
-And yes this will run on both Windows and Linux :)
+This is a collection of scripts to manage logging in to a cyberoam server.
 
-I have tested it on Ubuntu 12.04 x64 (KDE and Unity), and Windows 7 x64
-
-Installation and Usage
-----------------------
-The client requires the following software to be installed:
-* python 2.7 (http://www.python.org/getit)
-* pyqt4 (http://www.riverbankcomputing.co.uk/software/pyqt/download/)
-
-Ubuntu users can install it by running `apt-get install python python-qt4`
-
-To use, just run `python cyberoam.py`
-
-Limitations
------------
-* Needs a terminal tab open for it to be running (see workaround below).
-* Have not really worked on the layout. It needs refining. Volunteers anyone?
-
-Workaround:
-You can use the provided scripts to open cyberoam client outside the terminal/cmd. Just edit the paths inside the scripts.
-Also you'll need to make the linux script executable: `chmod +x cyberoam`
-
-I may create a proper installer sometime :)
+* [Python and PyQt](https://github.com/siddharthasahu/cyberoam-clients/tree/python-and-pyqt): A graphical client similar to the official cyberoam client for Windows. Should run on any platform running PyQt, including Linux and Windows.
+* [Simple Bash commands](https://github.com/siddharthasahu/cyberoam-clients/tree/simple-bash): Login/logout using simple curl commands
+* [Bash and Cron](https://github.com/siddharthasahu/cyberoam-clients/tree/bash-and-cron): Bash scripts using curl and cron
 
 License
 -------
