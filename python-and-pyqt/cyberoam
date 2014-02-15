@@ -1,4 +1,4 @@
 #!/bin/sh
 
-cd "../cyberoam-client";
+cd "../python-and-pyqt";
 python2 cyberoam.py
